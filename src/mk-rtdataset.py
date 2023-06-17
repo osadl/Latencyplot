@@ -1,11 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import os
 import sys
 import subprocess
 import gzip
 import json
-from datetime import datetime, timezone
+from datetime import datetime
+from tzlocal import get_localzone
 
 latencyfile = '/var/cache/latencyplot/histdata.txt'
 
@@ -16,8 +17,10 @@ def create(filename):
   format['version'] = '1.0'
 
   timestamps = rt['timestamps'] = {}
-  timestamps['origin'] = datetime.fromtimestamp(os.path.getctime(latencyfile)).astimezone().isoformat(timespec='seconds')
-  timestamps['dataset'] = datetime.now().astimezone().isoformat(timespec='seconds')
+  now = datetime.now(get_localzone()).isoformat()
+  tzoffset = '+' + now.split('+')[1]
+  timestamps['origin'] = datetime.fromtimestamp(os.path.getctime(latencyfile)).isoformat().split('.')[0] + tzoffset
+  timestamps['dataset'] = now.split('.')[0] + tzoffset
 
   system = rt['system'] = {}
   p = subprocess.Popen('hostname', stdout=subprocess.PIPE, shell=True)
