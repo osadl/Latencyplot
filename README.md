@@ -35,13 +35,13 @@ Create a basis for sharing data of Linux PREEMPT_RT real-time systems
         "cmdline": <Kernel command line>
     },
     "condition": {
-        "load": <System load conditions: "idle", "moderate", "heaavy" or "brute-force">
+        "load": <System load conditions: "idle", "moderate", "heaavy" or "brute-force">,
         "cycles": <Total number of cyclictest cycles>,
         "interval": <Cyclictest interval in µs>,
         "cyclictest": <Cyclictest command line>
     },
     "latency": {
-        "granularity": <Width of class of latency data>
+        "granularity": <Width of class of latency data>,
         "cores": [
             [
                 <Two dimensional array of number of samples per latency class and per core>  
