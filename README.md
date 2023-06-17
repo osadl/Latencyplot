@@ -3,6 +3,7 @@ Define a JSON file format for data exchange and provide example scripts how to c
 
 * [Purpose](#purpose)
 * [Data format](#data-format)
+* [Python scripts](#python-scripts)
 * [Examples](#examples)
 
 ## Purpose
@@ -51,6 +52,15 @@ Create a basis for sharing data of Linux PREEMPT_RT real-time systems
 }
 ```
 
+## Python scripts
+Two scripts are provided, one to generate a JSON data file and one to generate a latency plot from the data file. While the [first script mk-rtdataset.py](https://github.com/osadl/Latencyplot/blob/main/src/mk-rtdataset.py) is very specific and based on the particular measurement conditions of a typical OSADL QA Farm system, the [second script plot-rtdataset.py](https://github.com/osadl/Latencyplot/blob/main/src/plot-rtdataset.py) can be of general use.
+
 ## Examples
-The below latency plot was generated from the [example JSON data](https://github.com/osadl/examples/r0s8.json) that are part of this repository:
+The below latency plot was generated from the [example JSON data](https://github.com/osadl/Latencyplot/examples/r0s8.json) that are part of this repository, the two commands
+```bash
+mk-rtdataset.py r0s8.json
+plot-rtdataset.py r0s8.json r0s8.svg
+```
+
+were executed.
 <img src="/examples/r0s8.svg" alt="Example latency plot">
