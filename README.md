@@ -30,8 +30,11 @@ Create a basis for sharing data of Linux PREEMPT_RT real-time systems
     },
     "kernel": {
         "version": <Kernel version>,
+        "patches": [
+            <Array of lines of patch names>
+        ],
         "config": [
-            <Array of subsequent non-emtpy non-comment lines of the the kernel configuration>
+            <Array of subsequent non-emtpy non-comment lines of the kernel configuration>
         ],
         "cmdline": <Kernel command line>
     },
@@ -45,7 +48,7 @@ Create a basis for sharing data of Linux PREEMPT_RT real-time systems
         "granularity": <Width of class of latency data>,
         "cores": [
             [
-                <Two dimensional array of number of samples per latency class and per core>  
+                <Two-dimensional array of number of samples per latency classes per core>
             ]
         ]
     }

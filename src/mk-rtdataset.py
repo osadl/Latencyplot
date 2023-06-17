@@ -45,6 +45,19 @@ def create(filename):
   p.wait()
   kernel['version'] = output.decode('utf-8').strip('\n')
 
+  p = subprocess.Popen('/usr/local/bin/getpatches', stdout=subprocess.PIPE, shell=True)
+  (output, err) = p.communicate()
+  p.wait()
+  patches = output.decode('utf-8').split('\n')
+  kernel['patches'] = []
+  for line in patches:
+    line = line.strip('\n')
+    if len(line) == 0:
+      continue
+    line = line.split('/')
+    line = line[len(line) - 1]
+    kernel['patches'].append(line)
+
   with gzip.open('/proc/config.gz', 'rb') as c:
     config = c.read().decode('utf-8').split('\n')
   kernel['config'] = []

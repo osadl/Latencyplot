@@ -24,8 +24,13 @@ def plot(infilename, outfilename):
   fig.set_figwidth(16)
   fig.set_figheight(9)
 
+  try:
+    rt['kernel']['patches']
+    patched = 'patched '
+  except:
+    patched = ''
   plt.title('Latency histogram of ' + rt['system']['hostname'].split('.')[0] + ' with ' + rt['processor']['vendor'] +
-   ' ' + rt['processor']['type'] + ' (' + rt['processor']['family'] + '), kernel ' + rt['kernel']['version'], fontsize=14)
+   ' ' + rt['processor']['type'] + ' (' + rt['processor']['family'] + '), ' + patched + 'kernel ' + rt['kernel']['version'], fontsize=14)
   plt.yscale('log')
   plt.ylim(0.8E0, 1E8)
   plt.ylabel('Number of samples per latency class')
