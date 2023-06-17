@@ -6,7 +6,6 @@ import subprocess
 import gzip
 import json
 from datetime import datetime
-from tzlocal import get_localzone
 
 latencyfile = '/var/cache/latencyplot/histdata.txt'
 
@@ -17,9 +16,12 @@ def create(filename):
   format['version'] = '1.0'
 
   timestamps = rt['timestamps'] = {}
-  now = datetime.now(get_localzone()).isoformat()
-  tzoffset = '+' + now.split('+')[1]
+  p = subprocess.Popen('date -Iseconds', stdout=subprocess.PIPE, shell=True)
+  (output, err) = p.communicate()
+  p.wait()
+  tzoffset = '+' + output.decode('utf-8').split('+')[1].strip('\n')
   timestamps['origin'] = datetime.fromtimestamp(os.path.getctime(latencyfile)).isoformat().split('.')[0] + tzoffset
+  now = datetime.now().isoformat()
   timestamps['dataset'] = now.split('.')[0] + tzoffset
 
   system = rt['system'] = {}
@@ -48,7 +50,7 @@ def create(filename):
   p.wait()
   kernel['version'] = output.decode('utf-8').strip('\n')
 
-  p = subprocess.Popen('/usr/local/bin/getpatches', stdout=subprocess.PIPE, shell=True)
+  p = subprocess.Popen('getpatches', stdout=subprocess.PIPE, shell=True)
   (output, err) = p.communicate()
   p.wait()
   patches = output.decode('utf-8').split('\n')
