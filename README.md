@@ -56,7 +56,7 @@ Create a basis for sharing data of Linux PREEMPT_RT real-time systems
 Two scripts are provided, one to generate a JSON data file and one to generate a latency plot from the data file. While the [first script mk-rtdataset.py](https://github.com/osadl/Latencyplot/blob/main/src/mk-rtdataset.py) is very specific and based on the particular measurement conditions of a typical OSADL QA Farm system, the [second script plot-rtdataset.py](https://github.com/osadl/Latencyplot/blob/main/src/plot-rtdataset.py) can be of general use.
 
 ## Examples
-The below latency plot was generated from the [example JSON data](https://github.com/osadl/Latencyplot/examples/r0s8.json) that are part of this repository, the two commands
+The below latency plot was generated from the [example JSON data](https://github.com/osadl/Latencyplot/blob/main/examples/r0s8.json) that are part of this repository. The two commands
 ```bash
 mk-rtdataset.py r0s8.json
 plot-rtdataset.py r0s8.json r0s8.svg
