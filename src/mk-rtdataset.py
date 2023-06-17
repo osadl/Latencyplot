@@ -63,8 +63,9 @@ def create(filename):
     line = line[len(line) - 1]
     kernel['patches'].append(line)
 
-  with gzip.open('/proc/config.gz', 'rb') as c:
-    config = c.read().decode('utf-8').split('\n')
+  c = gzip.open('/proc/config.gz', 'rb')
+  config = c.read().decode('utf-8').split('\n')
+  c.close()
   kernel['config'] = []
   for line in config:
     line = line.strip('\n')
@@ -72,8 +73,9 @@ def create(filename):
       continue
     kernel['config'].append(line)
 
-  with open('/proc/cmdline', 'r') as c:
-    kernel['cmdline'] = c.read().strip('\n')
+  c = open('/proc/cmdline', 'r')
+  kernel['cmdline'] = c.read().strip('\n')
+  c.close()
 
   condition = rt['condition'] = {}
   condition['load'] = 'idle'
@@ -115,9 +117,13 @@ def create(filename):
     first = False
   h.close()
 
-  json_object = json.dumps(rt, indent=4)
-  with open(filename, 'w') as outfile:
-    outfile.write(json_object)
+  try:
+    json_object = json.dumps(rt, indent=4)
+  except:
+    json_object = json.write(rt)
+  outfile = open(filename, 'w')
+  outfile.write(json_object)
+  outfile.close()
 
 def main(argv):
   if len(argv) > 1:
