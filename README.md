@@ -3,6 +3,7 @@ Define a JSON file format for data exchange and provide example scripts how to c
 
 * [Purpose](#purpose)
 * [Data format](#data-format)
+* [Examples](#examples)
 
 ## Purpose
 Create a basis for sharing data of Linux PREEMPT_RT real-time systems
@@ -49,3 +50,7 @@ Create a basis for sharing data of Linux PREEMPT_RT real-time systems
     }
 }
 ```
+
+## Examples
+The below latency plot was generated from the [example JSON data](https://github.com/osadl/examples/r0s8.json) that are part of this repository:
+<img src="/examples/r0s8.svg" alt="Example latency plot">
