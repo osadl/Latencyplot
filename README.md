@@ -47,7 +47,7 @@ Create a basis for sharing data of Linux PREEMPT_RT real-time systems
     "latency": {
         "granularity": <Width of class of latency data>,
         "maxima": [
-           <Array of maximum latency per core>
+            <Array of maximum latency per core>
         ],
         "cores": [
             [
@@ -68,5 +68,5 @@ mk-rtdataset.py r0s8.json
 plot-rtdataset.py r0s8.json r0s8.svg
 ```
 
-were executed.
+were executed. It should be noted that in this example the latency values have exceeded the histogram range, so that it is not sufficient to determine the maximum from the histogram itself. For such cases, the maximum latency values per core must rather be stored separately (as in the OSADL QA farm raw data) or the line beginning with "# Max Latencies:" must be evaluated additionally.
 <img src="/examples/r0s8.svg" alt="Example latency plot">
