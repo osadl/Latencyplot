@@ -69,4 +69,9 @@ plot-rtdataset.py r0s8.json r0s8.svg
 ```
 
 were executed. It should be noted that in this example the latency values have exceeded the histogram range, so that it is not sufficient to determine the maximum from the histogram itself. For such cases, the maximum latency values per core must rather be stored separately (as in the OSADL QA farm raw data) or the line beginning with "# Max Latencies:" must be evaluated additionally.
-<img src="/examples/r0s8.svg" alt="Example latency plot">
+<img src="/examples/r0s8.svg" alt="Example latency plot of QA Farm system rack0slot8.osadl.org">
+
+And here are some more examples from OSADL QA Farm systems:
+<img src="/examples/r0s0.svg" alt="Example latency plot of QA Farm system rack0slot0.osadl.org">
+<img src="/examples/r3s5.svg" alt="Example latency plot of QA Farm system rack3slot5.osadl.org">
+<img src="/examples/r6s8.svg" alt="Example latency plot of QA Farm system rack6slot8.osadl.org">
