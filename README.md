@@ -46,6 +46,9 @@ Create a basis for sharing data of Linux PREEMPT_RT real-time systems
     },
     "latency": {
         "granularity": <Width of class of latency data>,
+        "maxima": [
+           <Array of maximum latency per core>
+        ],
         "cores": [
             [
                 <Two-dimensional array of number of samples per latency classes per core>

@@ -8,6 +8,7 @@ import json
 from datetime import datetime
 
 latencyfile = '/var/cache/latencyplot/histdata.txt'
+maximafile = '/var/cache/latencyplot/histmax.txt'
 
 def create(filename):
   rt = {}
@@ -98,13 +99,19 @@ def create(filename):
   latency = rt['latency'] = {}
   latency['granularity'] = 'microseconds'
   cores = latency['cores'] = []
-
+  maxima = latency['maxima'] = []
   h = open(latencyfile, 'r')
   lines = h.readlines()
   first = True
   for line in lines:
     line = line.strip('\n')
-    if len(line) == 0 or line[0] == '#':
+    if len(line) == 0:
+      continue
+    if line.startswith('# Max Latencies:'):
+      maxline = line.split(':')[1].strip()
+      for maxvalues in maxline.split(' '):
+        maxima.append(int(maxvalues))
+    if line[0] == '#':
       continue
     values = line.split('\t')
     c = 0
@@ -116,6 +123,11 @@ def create(filename):
       c += 1
     first = False
   h.close()
+  if len(maxima) == 0:
+    m = open(maximafile, 'r')
+    for maximum in m.read().strip('\n').split('\n'):
+      maxima.append(int(maximum))
+    m.close()
 
   try:
     json_object = json.dumps(rt, indent=4)

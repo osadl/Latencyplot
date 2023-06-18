@@ -36,7 +36,10 @@ def plot(infilename, outfilename):
   plt.ylabel('Number of samples per latency class')
   maxofmax = 0
   for i in range(1, len(cores)):
-    maxofcore = maxlat(cores[0], cores[i])
+    if len(rt['latency']['maxima']) == 0:
+      maxofcore = maxlat(cores[0], cores[i])
+    else:
+      maxofcore = rt['latency']['maxima'][i-1]
     if maxofcore > maxofmax:
       maxofmax = maxofcore
       coreofmax = i
@@ -45,6 +48,7 @@ def plot(infilename, outfilename):
     else:
       space = ''
     ax.stairs(cores[i], cores[0], label='Core #' + str(i-1) + ': ' + space + str(maxofcore) + ' µs')
+
   plt.xlabel('Maximum latency: ' + str(maxofmax) + ' µs, with "' + rt['condition']['cyclictest'] + '" on ' + rt['timestamps']['origin'].split('T')[0])
   plt.margins(0, 0)
   ax.yaxis.set_minor_locator(matplotlib.ticker.LogLocator(base=10.0, subs=(0.2,0.4,0.6,0.8), numticks=12))
