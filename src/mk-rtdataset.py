@@ -15,6 +15,7 @@ latencyfile = '/var/cache/latencyplot/histdata.txt'
 maximafile = '/var/cache/latencyplot/histmax.txt'
 
 def create(filename):
+    """Create JSON latency file "fileame" from data of the most recent cyclictest run."""
     rt = {}
     format = rt['format'] = {}
     format['name'] = 'RT Dataset'
@@ -90,14 +91,14 @@ def create(filename):
     f = open('/usr/local/bin/latencyplot', 'r')
     lines = f.readlines()
     for line in lines:
-         if 'cycles=' in line:
-             cycles = line.split('=')[1].strip('\n')
-         if 'cyclictest' in line:
-             if '/bin/' in line:
-                 line = line.split('/')
-                 line = line[len(line)-1]
-             condition['cyclictest'] = line.strip('\n').replace('$cycles', cycles).split('>')[0].strip()
-             break
+        if 'cycles=' in line:
+            cycles = line.split('=')[1].strip('\n')
+        if 'cyclictest' in line:
+            if '/bin/' in line:
+                line = line.split('/')
+                line = line[len(line)-1]
+            condition['cyclictest'] = line.strip('\n').replace('$cycles', cycles).split('>')[0].strip()
+            break
     f.close()
 
     latency = rt['latency'] = {}

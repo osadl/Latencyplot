@@ -19,6 +19,7 @@ def maxlat(x, y):
     return maximum
 
 def plot(infilename, outfilename):
+    """Read JSON data from "infilename" and create latency histogram "outfilename" with format derived from file name suffix."""
     with open(infilename, 'r') as f:
         rt= json.load(f)
     cores = rt['latency']['cores']
@@ -75,4 +76,4 @@ def main(argv):
     plot(infilename, outfilename)
 
 if __name__ == '__main__':
-    main(sys.argv) 
+    main(sys.argv)
