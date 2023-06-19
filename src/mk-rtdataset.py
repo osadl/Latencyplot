@@ -5,7 +5,7 @@
 # Author Carsten Emde <C.Emde@osadl.org>
 
 # Maintain Python 2.x compatibility
-# pylint: disable=consider-using-with
+# pylint: disable=consider-using-with,unspecified-encoding
 
 import os
 import sys
