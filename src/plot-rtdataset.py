@@ -20,8 +20,8 @@ def maxlat(x, y):
 
 def plot(infilename, outfilename):
     """Read JSON data from "infilename" and create latency histogram "outfilename" with format derived from file name suffix."""
-    with open(infilename, 'r') as f:
-        rt= json.load(f)
+    with open(infilename, 'r', encoding='utf-8') as f:
+        rt = json.load(f)
     cores = rt['latency']['cores']
     cores[0].append(max(cores[0]) + 1)
 
@@ -37,7 +37,7 @@ def plot(infilename, outfilename):
     plt.title('Latency histogram of ' + rt['system']['hostname'].split('.')[0] + ' with ' + rt['processor']['vendor'] +
      ' ' + rt['processor']['type'] + ' (' + rt['processor']['family'] + '), ' + patched + 'kernel ' + rt['kernel']['version'], fontsize=14)
     plt.yscale('log')
-    plt.ylim(0.8E0, 1E8)
+    plt.ylim(0.8E0, rt['condition']['cycles'])
     plt.ylabel('Number of samples per latency class')
     maxofmax = 0
     for i in range(1, len(cores)):

@@ -110,8 +110,6 @@ def create(filename):
 
     condition = rt['condition'] = {}
     condition['load'] = 'idle'
-    condition['cycles'] = int(1E8)
-    condition['interval'] = 200
 
     f = open('/usr/local/bin/latencyplot', 'r')
     lines = f.readlines()
@@ -125,6 +123,17 @@ def create(filename):
             condition['cyclictest'] = line.strip('\n').replace('$cycles', cycles).split('>')[0].strip()
             break
     f.close()
+    if 'cyclictest' in condition:
+        loops = [s for s in condition['cyclictest'].split(' ') if s.startswith('-l')]
+        interval = [s for s in condition['cyclictest'].split(' ') if s.startswith('-i')]
+        if loops:
+            condition['cycles'] = int(loops[0][2:])
+        if interval:
+            condition['interval'] = int(interval[0][2:])
+    if not 'cycles' in condition:
+        condition['cycles'] = int(1E8)
+    if not 'interval' in condition:
+        condition['interval'] = 200
 
     latency = rt['latency'] = {}
     latency['granularity'] = 'microseconds'
