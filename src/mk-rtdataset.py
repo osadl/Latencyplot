@@ -118,7 +118,7 @@ def create(filename):
                 maxima.append(int(maxvalues))
         if line[0] == '#':
             continue
-        values = line.split('\t')
+        values = line.replace(' ', '\t').split('\t')
         c = 0
         for value in values:
             if first:
