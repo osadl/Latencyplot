@@ -24,6 +24,11 @@ def create(filename):
     except ImportError:
         DEVNULL = open(os.devnull, 'wb')
 
+    try:
+        FileNotFoundError
+    except NameError:
+        FileNotFoundError = IOError
+
     rt = {}
     rtformat = rt['format'] = {}
     rtformat['name'] = 'RT Dataset'
