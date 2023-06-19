@@ -16,6 +16,11 @@ maximafile = '/var/cache/latencyplot/histmax.txt'
 
 def create(filename):
     """Create JSON latency file "fileame" from data of the most recent cyclictest run."""
+    try:
+        from subprocess import DEVNULL
+    except ImportError:
+        DEVNULL = open(os.devnull, 'wb')
+
     rt = {}
     format = rt['format'] = {}
     format['name'] = 'RT Dataset'
@@ -37,47 +42,59 @@ def create(filename):
     system['hostname'] = output.decode('utf-8').strip('\n')
 
     processor = rt['processor'] = {}
-    f = open('/etc/qafarm/shortcpu', 'r')
-    shortcpu = f.read().split(' ')
-    processor['family'] = shortcpu[0]
-    processor['vendor'] = shortcpu[1]
-    n = 2
-    processor['type'] = ''
-    while shortcpu[n][0] != '@':
-        if n > 2:
-            processor['type'] = processor['type'] + ' '
-        processor['type'] = processor['type'] + shortcpu[n]
-        n = n + 1
-    f.close()
+    try:
+        f = open('/etc/qafarm/shortcpu', 'r')
+        shortcpu = f.read().split(' ')
+        processor['family'] = shortcpu[0]
+        processor['vendor'] = shortcpu[1]
+        n = 2
+        processor['type'] = ''
+        while shortcpu[n][0] != '@':
+            if n > 2:
+                processor['type'] = processor['type'] + ' '
+            processor['type'] = processor['type'] + shortcpu[n]
+            n = n + 1
+        f.close()
+    except FileNotFoundError:
+        p = subprocess.Popen('uname -r', stdout=subprocess.PIPE, stderr=DEVNULL, shell=True)
+        (output, err) = p.communicate()
+        p.wait()
+        processor['family'] = output.decode('utf-8').strip('\n')
+        processor['vendor'] = 'unknown processor vendor'
+        processor['type'] = 'unknown processor type'
 
     kernel = rt['kernel'] = {}
-    p = subprocess.Popen('uname -r', stdout=subprocess.PIPE, shell=True)
+    p = subprocess.Popen('uname -r', stdout=subprocess.PIPE, stderr=DEVNULL, shell=True)
     (output, err) = p.communicate()
     p.wait()
     kernel['version'] = output.decode('utf-8').strip('\n')
 
-    p = subprocess.Popen('getpatches', stdout=subprocess.PIPE, shell=True)
+    p = subprocess.Popen('getpatches', stdout=subprocess.PIPE, stderr=DEVNULL, shell=True)
     (output, err) = p.communicate()
     p.wait()
     patches = output.decode('utf-8').split('\n')
-    kernel['patches'] = []
-    for line in patches:
-        line = line.strip('\n')
-        if len(line) == 0:
-            continue
-        line = line.split('/')
-        line = line[len(line) - 1]
-        kernel['patches'].append(line)
+    if patches[0]:
+        kernel['patches'] = []
+        for line in patches:
+            line = line.strip('\n')
+            if len(line) == 0:
+                continue
+            line = line.split('/')
+            line = line[len(line) - 1]
+            kernel['patches'].append(line)
 
-    c = gzip.open('/proc/config.gz', 'rb')
-    config = c.read().decode('utf-8').split('\n')
-    c.close()
     kernel['config'] = []
-    for line in config:
-        line = line.strip('\n')
-        if len(line) == 0 or line[0] == '#':
-            continue
-        kernel['config'].append(line)
+    try:
+        c = gzip.open('/proc/config.gz', 'rb')
+        config = c.read().decode('utf-8').split('\n')
+        c.close()
+        for line in config:
+            line = line.strip('\n')
+            if len(line) == 0 or line[0] == '#':
+                continue
+            kernel['config'].append(line)
+    except OSError:
+        pass
 
     c = open('/proc/cmdline', 'r')
     kernel['cmdline'] = c.read().strip('\n')
