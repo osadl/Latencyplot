@@ -4,6 +4,9 @@
 # Copyright (c) 2023 Open Source Automation Development Lab (OSADL) eG <info@osadl.org>
 # Author Carsten Emde <C.Emde@osadl.org>
 
+# Maintain Python 2.x compatibility
+# pylint: disable=consider-using-with
+
 import os
 import sys
 import subprocess
@@ -22,9 +25,9 @@ def create(filename):
         DEVNULL = open(os.devnull, 'wb')
 
     rt = {}
-    format = rt['format'] = {}
-    format['name'] = 'RT Dataset'
-    format['version'] = '1.0'
+    rtformat = rt['format'] = {}
+    rtformat['name'] = 'RT Dataset'
+    rtformat['version'] = '1.0'
 
     timestamps = rt['timestamps'] = {}
     p = subprocess.Popen('date -Iseconds', stdout=subprocess.PIPE, shell=True)
