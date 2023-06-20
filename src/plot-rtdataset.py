@@ -66,8 +66,10 @@ def plot(infilename, outfilename):
     ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10.0, numticks=10))
     leg = plt.legend(ncol=6)
     plt.legend(ncol=6).get_texts()[coreofmax - 1].set_fontweight('bold')
+    ax.text(0.995, 0.5, 'Measurement ended on ' + rt['timestamps']['origin'], fontsize = 'x-small', color = 'grey',
+        horizontalalignment='center', verticalalignment='center', rotation='vertical', transform=ax.transAxes)
 
-    if outfilename != '':
+    if len(outfilename) != 0:
         suffix = outfilename.split('.')
         suffix = suffix[len(suffix) - 1]
     else:
@@ -79,7 +81,7 @@ def plot(infilename, outfilename):
             containers[i].set_gid(f'stairs_{i}')
 
         f = BytesIO()
-        plt.savefig(f, format="svg")
+        plt.savefig(f, format=suffix)
 
         tree, xmlid = ET.XMLID(f.getvalue())
 
@@ -95,9 +97,7 @@ def plot(infilename, outfilename):
             if text1 != 0 and line1 != 0:
                 break;
 
-        offsets = []
-        offsets.append(text1)
-        offsets.append(line1)
+        offsets = [text1, line1]
 
         texts = leg.get_texts()
         for i in range(0, len(texts)):
