@@ -66,7 +66,6 @@ def plot(infilename, outfilename):
     ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10.0, numticks=10))
     leg = plt.legend(ncol=6)
     plt.legend(ncol=6).get_texts()[coreofmax - 1].set_fontweight('bold')
-    textoffset = 8 + 1 + 8 + 1 + 1 + 1 + 1
 
     if outfilename != '':
         suffix = outfilename.split('.')
@@ -79,24 +78,42 @@ def plot(infilename, outfilename):
         for i in range(0, len(containers) - 1):
             containers[i].set_gid(f'stairs_{i}')
 
-        texts = leg.get_texts()
-        for i in range(1, len(texts)):
-            texts[i].set_gid(f'text_{i+textoffset}')
-
         f = BytesIO()
         plt.savefig(f, format="svg")
 
         tree, xmlid = ET.XMLID(f.getvalue())
 
-        for i in range(1, len(texts)):
-            el = xmlid[f'text_{i+textoffset}']
+        legend1 = xmlid['legend_1']
+        text1 = 0
+        line1 = 0
+        for child in legend1:
+            id = child.attrib['id']
+            if text1 == 0 and id.startswith('text_'):
+                 text1 = int(id.split('_')[1])
+            if line1 == 0 and id.startswith('line2d_'):
+                 line1 = int(id.split('_')[1])
+            if text1 != 0 and line1 != 0:
+                break;
+
+        offsets = []
+        offsets.append(text1)
+        offsets.append(line1)
+
+        texts = leg.get_texts()
+        for i in range(0, len(texts)):
+            el = xmlid[f'text_{i+text1}']
             el.set('cursor', 'pointer')
-            el.set('onclick', "toggle_stairs(this)")
+            el.set('onclick', "toggle_stairsfromtext(this)")
+            el.set('style', 'opacity: 1;')
+            el = xmlid[f'line2d_{i+line1}']
+            el.set('cursor', 'pointer')
+            el.set('onclick', "toggle_stairsfromline(this)")
             el.set('style', 'opacity: 1;')
 
         script = """
 <script type="text/javascript">
 <![CDATA[
+var offsets = %s;
 function toggle(oid, attribute, values) {
     var obj = document.getElementById(oid);
     var a = obj.style[attribute];
@@ -105,15 +122,22 @@ function toggle(oid, attribute, values) {
     obj.style[attribute] = a;
 }
 
-function toggle_stairs(obj) {
+function toggle_stairsfromtext(obj) {
     var num = obj.id.split('_')[1];
 
     toggle('text_' + num, 'opacity', [1, 0.5]);
-    toggle('stairs_' + (parseInt(num) - 1 - parseInt(%s)), 'opacity', [1, 0]);
+    toggle('stairs_' + (parseInt(num) - offsets[0]), 'opacity', [1, 0]);
+}
+
+function toggle_stairsfromline(obj) {
+    var num = obj.id.split('_')[1];
+
+    toggle('line2d_' + num, 'opacity', [1, 0.5]);
+    toggle('stairs_' + (parseInt(num) - offsets[1]), 'opacity', [1, 0]);
 }
 ]]>
 </script>
-""" % json.dumps(str(textoffset))
+""" % json.dumps(offsets)
 
         css = tree.find('.//{http://www.w3.org/2000/svg}style')
         css.text = css.text + "g {-webkit-transition:opacity 0.4s ease-out;" + \
