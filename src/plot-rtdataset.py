@@ -103,12 +103,12 @@ def plot(infilename, outfilename):
         for i in range(0, len(texts)):
             el = xmlid[f'text_{i+text1}']
             el.set('cursor', 'pointer')
-            el.set('onclick', "toggle_stairsfromtext(this)")
+            el.set('onclick', "toggle_stairsfromtext(event, this)")
             el.set('style', 'opacity: 1;')
             el = xmlid[f'line2d_{i+line1}']
             el.set('cursor', 'pointer')
-            el.set('onclick', "toggle_stairsfromline(this)")
-            el.set('style', 'opacity: 1;')
+            el.set('onclick', "toggle_stairsfromline(event, this)")
+            el.set('style', 'opacity: 1; stroke-width: 8px;')
 
         script = """
 <script type="text/javascript">
@@ -122,18 +122,44 @@ function toggle(oid, attribute, values) {
     obj.style[attribute] = a;
 }
 
-function toggle_stairsfromtext(obj) {
-    var num = obj.id.split('_')[1];
+function allbutonedisable(thisnot) {
+    var i = 0;
 
-    toggle('text_' + num, 'opacity', [1, 0.5]);
-    toggle('stairs_' + (parseInt(num) - offsets[0]), 'opacity', [1, 0]);
+    while ((ele = document.getElementById('stairs_' + i)) != null) {
+        if (i != thisnot) {
+            ele.style.opacity = 0;
+            document.getElementById('text_' + (i + offsets[0])).style.opacity = 0.5;
+            document.getElementById('line2d_' + (i + offsets[1])).style.opacity = 0.3;
+        }
+        i++;
+    }
+    document.getElementById('stairs_' + thisnot).style.opacity = 1;
+    document.getElementById('text_' + (thisnot + offsets[0])).style.opacity = 1;
+    document.getElementById('line2d_' + (thisnot + offsets[1])).style.opacity = 1;
 }
 
-function toggle_stairsfromline(obj) {
+function toggle_stairsfromtext(event, obj) {
     var num = obj.id.split('_')[1];
 
-    toggle('line2d_' + num, 'opacity', [1, 0.5]);
-    toggle('stairs_' + (parseInt(num) - offsets[1]), 'opacity', [1, 0]);
+    if (event.ctrlKey)
+        allbutonedisable(parseInt(num) - offsets[0]);
+    else {
+        toggle('text_' + num, 'opacity', [1, 0.5]);
+        toggle('line2d_' + (parseInt(num) + offsets[1] - offsets[0]), 'opacity', [1, 0.3]);
+        toggle('stairs_' + (parseInt(num) - offsets[0]), 'opacity', [1, 0]);
+    }
+}
+
+function toggle_stairsfromline(event, obj) {
+    var num = obj.id.split('_')[1];
+
+    if (event.ctrlKey)
+        allbutonedisable(parseInt(num) - offsets[1]);
+    else {
+        toggle('line2d_' + num, 'opacity', [1, 0.3]);
+        toggle('text_' + (parseInt(num) + offsets[0] - offsets[1]), 'opacity', [1, 0.5]);
+        toggle('stairs_' + (parseInt(num) - offsets[1]), 'opacity', [1, 0]);
+    }
 }
 ]]>
 </script>
