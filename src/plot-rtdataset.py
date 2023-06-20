@@ -122,6 +122,17 @@ function toggle(oid, attribute, values) {
     obj.style[attribute] = a;
 }
 
+function allenable() {
+    var i = 0;
+
+    while ((ele = document.getElementById('stairs_' + i)) != null) {
+        ele.style.opacity =
+        document.getElementById('text_' + (i + offsets[0])).style.opacity =
+        document.getElementById('line2d_' + (i + offsets[1])).style.opacity = 1;
+        i++;
+    }
+}
+
 function allbutonedisable(thisnot) {
     var i = 0;
 
@@ -143,6 +154,8 @@ function toggle_stairsfromtext(event, obj) {
 
     if (event.ctrlKey)
         allbutonedisable(parseInt(num) - offsets[0]);
+    else if (event.shiftKey)
+        allenable();
     else {
         toggle('text_' + num, 'opacity', [1, 0.5]);
         toggle('line2d_' + (parseInt(num) + offsets[1] - offsets[0]), 'opacity', [1, 0.3]);
@@ -155,6 +168,8 @@ function toggle_stairsfromline(event, obj) {
 
     if (event.ctrlKey)
         allbutonedisable(parseInt(num) - offsets[1]);
+    else if (event.shiftKey)
+        allenable();
     else {
         toggle('line2d_' + num, 'opacity', [1, 0.3]);
         toggle('text_' + (parseInt(num) + offsets[0] - offsets[1]), 'opacity', [1, 0.5]);
