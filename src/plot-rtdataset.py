@@ -75,7 +75,7 @@ def plot(infilename, outfilename):
 
     if suffix == 'svg':
 
-        for i in range(0, len(containers) - 1):
+        for i in range(0, len(containers)):
             containers[i].set_gid(f'stairs_{i}')
 
         f = BytesIO()
