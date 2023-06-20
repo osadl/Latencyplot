@@ -57,13 +57,16 @@ def plot(infilename, outfilename):
             space = '  '
         else:
             space = ''
-        container = ax.stairs(cores[i], cores[0], label='Core #' + str(i-1) + ': ' + space + str(maxofcore) + ' µs')
+        container = ax.stairs(cores[i], cores[0], label='Core ■' + str(i-1) + ': ' + space + str(maxofcore) + ' µs')
         containers.append(container)
     plt.xlabel('Maximum latency: ' + str(maxofmax) + ' µs, with "' + rt['condition']['cyclictest'] + '" on ' + rt['timestamps']['origin'].split('T')[0])
     plt.margins(0, 0)
+    plt.locator_params(axis = 'x', nbins = 8)
     ax.yaxis.set_minor_locator(matplotlib.ticker.LogLocator(base=10.0, subs=(0.2,0.4,0.6,0.8), numticks=12))
     ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10.0, numticks=10))
+    leg = plt.legend(ncol=6)
     plt.legend(ncol=6).get_texts()[coreofmax - 1].set_fontweight('bold')
+    textoffset = 8 + 1 + 8 + 1 + 1 + 1 + 1
 
     if outfilename != '':
         suffix = outfilename.split('.')
@@ -72,21 +75,21 @@ def plot(infilename, outfilename):
         suffix = ''
 
     if suffix == 'svg':
-        leg = plt.legend(frameon = False)
 
         for i in range(0, len(containers) - 1):
             containers[i].set_gid(f'stairs_{i}')
 
-        for i, t in enumerate(leg.get_texts()):
-            t.set_gid(f'leg_text_{i}')
+        texts = leg.get_texts()
+        for i in range(1, len(texts)):
+            texts[i].set_gid(f'text_{i+textoffset}')
 
         f = BytesIO()
         plt.savefig(f, format="svg")
 
         tree, xmlid = ET.XMLID(f.getvalue())
 
-        for i, t in enumerate(leg.get_texts()):
-            el = xmlid[f'leg_text_{i}']
+        for i in range(1, len(texts)):
+            el = xmlid[f'text_{i+textoffset}']
             el.set('cursor', 'pointer')
             el.set('onclick', "toggle_stairs(this)")
             el.set('style', 'opacity: 1;')
@@ -103,14 +106,14 @@ function toggle(oid, attribute, values) {
 }
 
 function toggle_stairs(obj) {
-    var num = obj.id.split('_')[2];
+    var num = obj.id.split('_')[1];
 
-    toggle('leg_text_' + num, 'opacity', [1, 0.5]);
-    toggle('stairs_' + num, 'opacity', [1, 0]);
+    toggle('text_' + num, 'opacity', [1, 0.5]);
+    toggle('stairs_' + (parseInt(num) - 1 - parseInt(%s)), 'opacity', [1, 0]);
 }
 ]]>
 </script>
-"""
+""" % json.dumps(str(textoffset))
 
         css = tree.find('.//{http://www.w3.org/2000/svg}style')
         css.text = css.text + "g {-webkit-transition:opacity 0.4s ease-out;" + \
