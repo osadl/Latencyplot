@@ -8,6 +8,10 @@ import sys
 import json
 import matplotlib.pyplot as plt
 import matplotlib.ticker
+import xml.etree.ElementTree as ET
+from io import BytesIO
+
+ET.register_namespace("", "http://www.w3.org/2000/svg")
 
 def maxlat(x, y):
     maximum = 0
@@ -40,6 +44,7 @@ def plot(infilename, outfilename):
     plt.ylim(0.8E0, rt['condition']['cycles'])
     plt.ylabel('Number of samples per latency class')
     maxofmax = 0
+    containers = []
     for i in range(1, len(cores)):
         if len(rt['latency']['maxima']) == 0:
             maxofcore = maxlat(cores[0], cores[i])
@@ -52,17 +57,74 @@ def plot(infilename, outfilename):
             space = '  '
         else:
             space = ''
-        ax.stairs(cores[i], cores[0], label='Core #' + str(i-1) + ': ' + space + str(maxofcore) + ' µs')
-
+        container = ax.stairs(cores[i], cores[0], label='Core #' + str(i-1) + ': ' + space + str(maxofcore) + ' µs')
+        containers.append(container)
     plt.xlabel('Maximum latency: ' + str(maxofmax) + ' µs, with "' + rt['condition']['cyclictest'] + '" on ' + rt['timestamps']['origin'].split('T')[0])
     plt.margins(0, 0)
     ax.yaxis.set_minor_locator(matplotlib.ticker.LogLocator(base=10.0, subs=(0.2,0.4,0.6,0.8), numticks=12))
     ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10.0, numticks=10))
     plt.legend(ncol=6).get_texts()[coreofmax - 1].set_fontweight('bold')
-    if len(outfilename) == 0:
-        plt.show()
+
+    if outfilename != '':
+        suffix = outfilename.split('.')
+        suffix = suffix[len(suffix) - 1]
     else:
-        plt.savefig(outfilename)
+        suffix = ''
+
+    if suffix == 'svg':
+        leg = plt.legend(frameon = False)
+
+        for i in range(0, len(containers) - 1):
+            containers[i].set_gid(f'stairs_{i}')
+
+        for i, t in enumerate(leg.get_texts()):
+            t.set_gid(f'leg_text_{i}')
+
+        f = BytesIO()
+        plt.savefig(f, format="svg")
+
+        tree, xmlid = ET.XMLID(f.getvalue())
+
+        for i, t in enumerate(leg.get_texts()):
+            el = xmlid[f'leg_text_{i}']
+            el.set('cursor', 'pointer')
+            el.set('onclick', "toggle_stairs(this)")
+            el.set('style', 'opacity: 1;')
+
+        script = """
+<script type="text/javascript">
+<![CDATA[
+function toggle(oid, attribute, values) {
+    var obj = document.getElementById(oid);
+    var a = obj.style[attribute];
+
+    a = (a == values[0] || a == "") ? values[1] : values[0];
+    obj.style[attribute] = a;
+}
+
+function toggle_stairs(obj) {
+    var num = obj.id.split('_')[2];
+
+    toggle('leg_text_' + num, 'opacity', [1, 0.5]);
+    toggle('stairs_' + num, 'opacity', [1, 0]);
+}
+]]>
+</script>
+"""
+
+        css = tree.find('.//{http://www.w3.org/2000/svg}style')
+        css.text = css.text + "g {-webkit-transition:opacity 0.4s ease-out;" + \
+            "-moz-transition:opacity 0.4s ease-out;}"
+
+        tree.insert(0, ET.XML(script))
+
+        ET.ElementTree(tree).write(outfilename)
+
+    else:
+        if len(outfilename) == 0:
+            plt.show()
+        else:
+            plt.savefig(outfilename)
 
 def main(argv):
     if len(argv) > 1:
