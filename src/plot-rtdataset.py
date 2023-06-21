@@ -100,7 +100,7 @@ def plot(infilename, outfilename):
                     if nextchild.tag[len(nextchild.tag) - 1] == 'g':
                         endofstring = float(nextchild[len(nextchild) - 1].get('x')) + 60
                         path = ET.SubElement(nextchild, 'path')
-                        path.set('d', 'M 0 0 H ' + str(endofstring) + ' V 60 H 0 Z')
+                        path.set('d', 'M 0 -11 H ' + str(endofstring) + ' V 80 H 0 Z')
                         path.set('style', 'fill: #fff; opacity: 0;')
                         path.set('cursor', 'pointer')
                         path.set('onclick', "toggle_stairsfromtext(event, this)")
