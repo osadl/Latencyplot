@@ -43,21 +43,23 @@ def plot(infilename, outfilename):
     plt.yscale('log')
     plt.ylim(0.8E0, rt['condition']['cycles'])
     plt.ylabel('Number of samples per latency class')
-    maxofmax = 0
+    maxofmax = -1
     containers = []
     for i in range(1, len(cores)):
         if len(rt['latency']['maxima']) == 0:
             maxofcore = maxlat(cores[0], cores[i])
         else:
             maxofcore = rt['latency']['maxima'][i-1]
-        if maxofcore > maxofmax:
+        if maxofcore >= maxofmax:
+            if maxofcore > maxofmax:
+                coresofmax = []
+            coresofmax.append(i-1)
             maxofmax = maxofcore
-            coreofmax = i
         if i <= 10:
             space = '  '
         else:
             space = ''
-        container = ax.stairs(cores[i], cores[0], label='Core ■' + str(i-1) + ': ' + space + str(maxofcore) + ' µs')
+        container = ax.stairs(cores[i], cores[0], label='Core #' + str(i-1) + ': ' + space + str(maxofcore) + ' µs')
         containers.append(container)
     plt.xlabel('Maximum latency: ' + str(maxofmax) + ' µs, with "' + rt['condition']['cyclictest'] + '" on ' + rt['timestamps']['origin'].split('T')[0])
     plt.margins(0, 0)
@@ -65,7 +67,8 @@ def plot(infilename, outfilename):
     ax.yaxis.set_minor_locator(matplotlib.ticker.LogLocator(base=10.0, subs=(0.2,0.4,0.6,0.8), numticks=12))
     ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10.0, numticks=10))
     leg = plt.legend(ncol=6)
-    plt.legend(ncol=6).get_texts()[coreofmax - 1].set_fontweight('bold')
+    for i in coresofmax:
+        leg.get_texts()[i].set_color('red')
     ax.text(0.995, 0.5, 'Measurement ended on ' + rt['timestamps']['origin'], fontsize = 'x-small', color = 'grey',
         horizontalalignment='center', verticalalignment='center', rotation='vertical', transform=ax.transAxes)
 
@@ -86,25 +89,29 @@ def plot(infilename, outfilename):
         tree, xmlid = ET.XMLID(f.getvalue())
 
         legend1 = xmlid['legend_1']
-        text1 = 0
-        line1 = 0
+        text1 = -1
+        line1 = -1
         for child in legend1:
             id = child.attrib['id']
-            if text1 == 0 and id.startswith('text_'):
-                 text1 = int(id.split('_')[1])
-            if line1 == 0 and id.startswith('line2d_'):
-                 line1 = int(id.split('_')[1])
-            if text1 != 0 and line1 != 0:
-                break;
+            if id.startswith('text_'):
+                if text1 == -1:
+                    text1 = int(id.split('_')[1])
+                for nextchild in child:
+                    if nextchild.tag[len(nextchild.tag) - 1] == 'g':
+                        endofstring = float(nextchild[len(nextchild) - 1].get('x')) + 60
+                        path = ET.SubElement(nextchild, 'path')
+                        path.set('d', 'M 0 0 H ' + str(endofstring) + ' V 60 H 0 Z')
+                        path.set('style', 'fill: #fff; opacity: 0;')
+                        path.set('cursor', 'pointer')
+                        path.set('onclick', "toggle_stairsfromtext(event, this)")
+                        break
+            if line1 == -1 and id.startswith('line2d_'):
+                line1 = int(id.split('_')[1])
 
         offsets = [text1, line1]
 
         texts = leg.get_texts()
         for i in range(0, len(texts)):
-            el = xmlid[f'text_{i+text1}']
-            el.set('cursor', 'pointer')
-            el.set('onclick', "toggle_stairsfromtext(event, this)")
-            el.set('style', 'opacity: 1;')
             el = xmlid[f'line2d_{i+line1}']
             el.set('cursor', 'pointer')
             el.set('onclick', "toggle_stairsfromline(event, this)")
@@ -150,7 +157,7 @@ function allbutonedisable(thisnot) {
 }
 
 function toggle_stairsfromtext(event, obj) {
-    var num = obj.id.split('_')[1];
+    var num = obj.parentElement.parentElement.id.split('_')[1];
 
     if (event.ctrlKey)
         allbutonedisable(parseInt(num) - offsets[0]);
