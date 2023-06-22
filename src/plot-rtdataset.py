@@ -61,7 +61,7 @@ def plot(infilename, outfilename):
             space = ''
         container = ax.stairs(cores[i], cores[0], label='Core #' + str(i-1) + ': ' + space + str(maxofcore) + ' µs')
         containers.append(container)
-    plt.xlabel('Maximum latency: ' + str(maxofmax) + ' µs, with "' + rt['condition']['cyclictest'] + '" on ' + rt['timestamps']['origin'].split('T')[0])
+    plt.xlabel('Latency (µs) with "' + rt['condition']['cyclictest'] + '"')
     plt.margins(0, 0)
     plt.locator_params(axis = 'x', nbins = 8)
     ax.yaxis.set_minor_locator(matplotlib.ticker.LogLocator(base=10.0, subs=(0.2,0.4,0.6,0.8), numticks=12))
@@ -69,7 +69,7 @@ def plot(infilename, outfilename):
     leg = plt.legend(ncol=6)
     for i in coresofmax:
         leg.get_texts()[i].set_color('red')
-    ax.text(0.995, 0.5, 'Measurement ended on ' + rt['timestamps']['origin'], fontsize = 'x-small', color = 'grey',
+    ax.text(0.995, 0.5, 'Measurement on ' + rt['timestamps']['origin'].split('T')[0], fontsize = 'x-small', color = 'grey',
         horizontalalignment='center', verticalalignment='center', rotation='vertical', transform=ax.transAxes)
 
     if len(outfilename) != 0:
