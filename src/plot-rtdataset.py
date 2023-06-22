@@ -87,6 +87,8 @@ def plot(infilename, outfilename):
         plt.savefig(f, format=suffix)
 
         tree, xmlid = ET.XMLID(f.getvalue())
+        tree.attrib.pop('width', None)
+        tree.attrib.pop('height', None)
 
         legend1 = xmlid['legend_1']
         text1 = -1
