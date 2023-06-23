@@ -26,7 +26,8 @@ Create a basis for sharing data of Linux PREEMPT_RT real-time systems
     "processor": {
         "family": <Processor family>,
         "vendor": <Processor vendor>,
-        "type": <Processor type>
+        "type": <Processor type>,
+        "clock": <Processor clock frequency in MHz>
     },
     "kernel": {
         "version": <Kernel version>,

@@ -38,8 +38,12 @@ def plot(infilename, outfilename):
         patched = 'patched '
     except:
         patched = ''
+    if 'clock' in rt['processor'].keys():
+        clock = ' @' + rt['processor']['clock'] + ' MHz'
+    else:
+        clock = ''
     plt.title('Latency histogram of ' + rt['system']['hostname'].split('.')[0] + ' with ' + rt['processor']['vendor'] +
-     ' ' + rt['processor']['type'] + ' (' + rt['processor']['family'] + '), ' + patched + 'kernel ' + rt['kernel']['version'], fontsize=14)
+     ' ' + rt['processor']['type'] + clock + ' (' + rt['processor']['family'] + '), ' + patched + 'kernel ' + rt['kernel']['version'], fontsize=14)
     plt.yscale('log')
     plt.ylim(0.8E0, rt['condition']['cycles'])
     plt.ylabel('Number of samples per latency class')

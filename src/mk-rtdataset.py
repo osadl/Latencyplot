@@ -52,7 +52,9 @@ def create(filename):
     processor = rt['processor'] = {}
     try:
         f = open('/etc/qafarm/shortcpu', 'r')
-        shortcpu = f.read().split(' ')
+        shortcpu = f.read()
+        processor['clock'] = shortcpu.split('@')[1].split(' ')[0]
+        shortcpu = shortcpu.split(' ')
         processor['family'] = shortcpu[0]
         processor['vendor'] = shortcpu[1]
         n = 2
@@ -64,12 +66,31 @@ def create(filename):
             n = n + 1
         f.close()
     except FileNotFoundError:
-        p = subprocess.Popen('uname -r', stdout=subprocess.PIPE, stderr=DEVNULL, shell=True)
+        p = subprocess.Popen('uname -m', stdout=subprocess.PIPE, stderr=DEVNULL, shell=True)
         (output, err) = p.communicate()
         p.wait()
         processor['family'] = output.decode('utf-8').strip('\n')
-        processor['vendor'] = 'unknown processor vendor'
-        processor['type'] = 'unknown processor type'
+        p = subprocess.Popen('cat /proc/cpuinfo', stdout=subprocess.PIPE, stderr=DEVNULL, shell=True)
+        (output, err) = p.communicate()
+        p.wait()
+        cpuinfo = output.decode('utf-8').split('\n')
+        for c in cpuinfo:
+            if c.startswith('Hardware'):
+                hw = c.split(':')[1].strip().split(' ')
+                processor['vendor'] = hw[0]
+                processor['type'] = hw[1]
+                break
+        if 'vendor' not in processor.keys():
+            for c in cpuinfo:
+                if c.startswith('model name'):
+                    model = c.split(':')[1].strip().split(' ')
+                    processor['vendor'] = model[0].split('(')[0]
+                    processor['type'] = model[2]
+                    clock = model[model.index('@') + 1]
+                    if clock.endswith('GHz'):
+                        clock = str(int(float(clock[:-3]) * 1000))
+                    processor['clock'] = clock
+                    break
 
     kernel = rt['kernel'] = {}
     p = subprocess.Popen('uname -r', stdout=subprocess.PIPE, stderr=DEVNULL, shell=True)
