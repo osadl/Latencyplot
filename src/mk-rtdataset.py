@@ -117,13 +117,19 @@ def create(filename):
         c = gzip.open('/proc/config.gz', 'rb')
         config = c.read().decode('utf-8').split('\n')
         c.close()
+    except FileNotFoundError:
+        try:
+            c = open('/boot/config-' + kernel['version'], 'r')
+            config = c.read().decode('utf-8').split('\n')
+            c.close()
+        except FileNotFoundError:
+            pass
+    if config:
         for line in config:
             line = line.strip('\n')
             if len(line) == 0 or line[0] == '#':
                 continue
             kernel['config'].append(line)
-    except OSError:
-        pass
 
     c = open('/proc/cmdline', 'r')
     kernel['cmdline'] = c.read().strip('\n')
