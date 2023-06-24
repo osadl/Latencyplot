@@ -98,7 +98,7 @@ def create(filename):
     p.wait()
     kernel['version'] = output.decode('utf-8').strip('\n')
 
-    p = subprocess.Popen('getpatches', stdout=subprocess.PIPE, stderr=DEVNULL, shell=True)
+    p = subprocess.Popen('/usr/local/bin/getpatches', stdout=subprocess.PIPE, stderr=DEVNULL, shell=True)
     (output, err) = p.communicate()
     p.wait()
     patches = output.decode('utf-8').split('\n')
