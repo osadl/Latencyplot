@@ -113,6 +113,7 @@ def create(filename):
             kernel['patches'].append(line)
 
     kernel['config'] = []
+    config = ''
     try:
         c = gzip.open('/proc/config.gz', 'rb')
         config = c.read().decode('utf-8').split('\n')
@@ -124,7 +125,7 @@ def create(filename):
             c.close()
         except FileNotFoundError:
             pass
-    if config:
+    if config != '':
         for line in config:
             line = line.strip('\n')
             if len(line) == 0 or line[0] == '#':
@@ -143,11 +144,12 @@ def create(filename):
     for line in lines:
         if 'cycles=' in line:
             cycles = line.split('=')[1].strip('\n')
+        line = line.split('>')[0]
         if 'cyclictest' in line:
             if '/bin/' in line:
                 line = line.split('/')
                 line = line[len(line)-1]
-            condition['cyclictest'] = line.strip('\n').replace('$cycles', cycles).split('>')[0].strip()
+            condition['cyclictest'] = line.strip('\n').replace('$cycles', cycles).strip()
             break
     f.close()
     if 'cyclictest' in condition:
