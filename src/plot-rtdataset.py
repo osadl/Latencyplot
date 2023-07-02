@@ -5,6 +5,7 @@
 # Author Carsten Emde <C.Emde@osadl.org>
 
 import sys
+import argparse
 import json
 import matplotlib.pyplot as plt
 import matplotlib.ticker
@@ -13,7 +14,28 @@ from io import BytesIO
 
 ET.register_namespace("", "http://www.w3.org/2000/svg")
 
+def merge(a, b, verbose, current = None):
+    """Merge b into a."""
+    if current is None:
+        current = []
+    for key in b:
+        if key in a:
+            if isinstance(a[key], dict) and isinstance(b[key], dict):
+                merge(a[key], b[key], verbose, current + [str(key)])
+            elif a[key] == b[key]:
+                pass
+            else:
+                if verbose:
+                    print ('Overwriting ' + str(a[key]) + ' with ' + str(b[key]) + ' at rt' + str(current) + '[\'' + str(key) + '\']')
+                a[key] = b[key]
+        else:
+            if verbose:
+                print ('Adding rt[' + '\'' + str(key) + '\']')
+            a[key] = b[key]
+    return a
+
 def maxlat(x, y):
+    """Determine maximum latency per core."""
     maximum = 0
     for lat in x:
         if lat == max(x):
@@ -22,10 +44,25 @@ def maxlat(x, y):
             maximum = lat
     return maximum
 
-def plot(infilename, outfilename):
+def plot(infilename, addinput, outfilename, xred, verbose):
     """Read JSON data from "infilename" and create latency histogram "outfilename" with format derived from file name suffix."""
-    with open(infilename, 'r', encoding='utf-8') as f:
-        rt = json.load(f)
+    try:
+        with open(infilename, 'r', encoding = 'utf-8') as f:
+            rt = json.load(f)
+    except OSError as error:
+        print('Could not open JSON input file "' + infilename + '" due to ' + str(error))
+        exit(1)
+
+    if len(addinput) != 0:
+        try:
+            with open(addinput, 'r', encoding = 'utf-8') as f:
+                rt2 = json.load(f)
+            merge(rt, rt2, verbose)
+
+        except OSError as error:
+            print('Could not open additional JSON input file "' + infilename + '" due to ' + str(error))
+            exit(1)
+
     cores = rt['latency']['cores']
     cores[0].append(max(cores[0]) + 1)
 
@@ -43,7 +80,9 @@ def plot(infilename, outfilename):
     else:
         clock = ''
     plt.title('Latency histogram of ' + rt['system']['hostname'].split('.')[0] + ' with ' + rt['processor']['vendor'] +
-     ' ' + rt['processor']['type'] + clock + ' (' + rt['processor']['family'] + '), ' + patched + 'kernel ' + rt['kernel']['version'], fontsize=14)
+     ' ' + rt['processor']['type'] + clock + ' (' + rt['processor']['family'] + '), ' + patched + 'kernel ' + rt['kernel']['version'], fontsize = 14)
+    xmax = max(cores[0]) + 1
+    plt.xlim(0, xmax / xred)
     plt.yscale('log')
     plt.ylim(0.8E0, rt['condition']['cycles'])
     plt.ylabel('Number of samples per latency class')
@@ -63,18 +102,18 @@ def plot(infilename, outfilename):
             space = '  '
         else:
             space = ''
-        container = ax.stairs(cores[i], cores[0], label='Core #' + str(i-1) + ': ' + space + str(maxofcore) + ' µs')
+        container = ax.stairs(cores[i], cores[0], label = 'Core #' + str(i-1) + ': ' + space + str(maxofcore) + ' µs')
         containers.append(container)
     plt.xlabel('Latency (µs) with "' + rt['condition']['cyclictest'] + '"')
     plt.margins(0, 0)
     plt.locator_params(axis = 'x', nbins = 8)
-    ax.yaxis.set_minor_locator(matplotlib.ticker.LogLocator(base=10.0, subs=(0.2,0.4,0.6,0.8), numticks=12))
-    ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10.0, numticks=10))
-    leg = plt.legend(ncol=6)
+    ax.yaxis.set_minor_locator(matplotlib.ticker.LogLocator(base = 10.0, subs = (0.2,0.4,0.6,0.8), numticks = 12))
+    ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(base = 10.0, numticks = 10))
+    leg = plt.legend(ncol = 6)
     for i in coresofmax:
         leg.get_texts()[i].set_color('red')
     ax.text(0.995, 0.5, 'Measurement on ' + rt['timestamps']['origin'].split('T')[0], fontsize = 'x-small', color = 'grey',
-        horizontalalignment='center', verticalalignment='center', rotation='vertical', transform=ax.transAxes)
+        horizontalalignment = 'center', verticalalignment = 'center', rotation = 'vertical', transform = ax.transAxes)
 
     if len(outfilename) != 0:
         suffix = outfilename.split('.')
@@ -88,7 +127,7 @@ def plot(infilename, outfilename):
             containers[i].set_gid(f'stairs_{i}')
 
         f = BytesIO()
-        plt.savefig(f, format=suffix)
+        plt.savefig(f, format = suffix)
 
         tree, xmlid = ET.XMLID(f.getvalue())
         tree.attrib.pop('width', None)
@@ -199,24 +238,71 @@ function toggle_stairsfromline(event, obj) {
 
         tree.insert(0, ET.XML(script))
 
-        ET.ElementTree(tree).write(outfilename)
+        try:
+            ET.ElementTree(tree).write(outfilename)
+            if verbose:
+                print('Successfully wrote animated latency plot in SVG format to "' + outfilename + '"')
+        except OSError as error:
+            print('Could not write latency plot to "' + outfilename + '" due to ' + str(error))
+            exit(1)
 
     else:
         if len(outfilename) == 0:
             plt.show()
         else:
-            plt.savefig(outfilename)
+            try:
+                plt.savefig(outfilename)
+                if verbose:
+                    print('Successfully wrote graph of latency plot to "' + outfilename + '"')
+            except OSError as error:
+                print('Could not write latency plot to "' + outfilename + '" due to ' + str(error))
+                exit(1)
 
 def main(argv):
-    if len(argv) > 1:
-        infilename = argv[1]
+    parser = argparse.ArgumentParser(prog = 'plot-rtdataset.py',
+      epilog = 'Create graph of latency plot from provided JSON RT data set')
+
+    parser.add_argument('infilename',
+      default = 'rt.json',
+      help = 'file name of a JSON RT data set to process, default "rt.json"',
+      metavar = 'JSON',
+      nargs = '?')
+    parser.add_argument('outfilename',
+      default = '',
+      help = 'file name of the latency plot to create, default to screen',
+      metavar = 'PLOT',
+      nargs = '?')
+    parser.add_argument('-a', '--addinput',
+      action = 'store',
+      default = '',
+      help = 'file name of a additional JSON RT data set to be merged into first one',
+      metavar = 'JSON2',
+      required = False)
+    parser.add_argument('-f', '--formats',
+      action = 'store_true',
+      default = False,
+      help = 'generate list of supported output formats')
+    parser.add_argument('-r', '--xred',
+      action = 'store',
+      choices = [2, 4, 8],
+      default = 1,
+      help = 'reduce x scale by 2, 4, or 8',
+      required = False,
+      type = int)
+    parser.add_argument('-v', '--verbose',
+      action = 'store_true',
+      default = False,
+      help = 'show what the program is doing')
+    args = parser.parse_args()
+
+    if args.formats:
+        fs = plt.gcf().canvas.get_supported_filetypes()
+        print("Supported formats (must be provided as output file name suffix):")
+        for key, val in fs.items():
+            print(key, ":", val)
+        print("Note that an animated SVG file is created when an '.svg' suffixed output file name is specified.")
     else:
-        infilename = 'rt.json'
-    if len(argv) > 2:
-        outfilename = argv[2]
-    else:
-        outfilename = ''
-    plot(infilename, outfilename)
+        plot(args.infilename, args.addinput, args.outfilename, args.xred, args.verbose)
 
 if __name__ == '__main__':
     main(sys.argv)
