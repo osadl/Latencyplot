@@ -114,7 +114,7 @@ plot-rtdataset.py r0s8.json r0s8.svg
 were executed. It should be noted that in this example the latency values have exceeded the histogram range, so that it is not sufficient to determine the maximum from the histogram itself. For such cases, the maximum latency values per core must rather be stored separately (as in the OSADL QA farm raw data) or the line beginning with "# Max Latencies:" must be evaluated additionally.
 <img src="/examples/r0s8.svg" alt="Example latency plot of QA Farm system rack0slot8.osadl.org">
 
-If an SVG suffixed output file is given and the resulting graph is displayed in a [browser](https://raw.githubusercontent.com/osadl/Latencyplot/main/examples/r0s8.svg), per-core histograms may individually be switched on and off:
+If this graph is loaded directly into an SVG-enabled browser, per-core histograms may individually be switched on and off [click here to try it out](https://www.osadl.org/Latencyplot/examples/r0s8.svg):
 * Click on a legend element: The histogram of the related core is toggled.
 * Ctrl-click on a legend element: All other histograms except the one of the clicked core are disabled.
 * Shift-click on a legend element: All histograms are restored.
