@@ -139,19 +139,11 @@ def create(filename):
     condition = rt['condition'] = {}
     condition['load'] = 'idle'
 
-    f = open('/usr/local/bin/latencyplot', 'r')
-    lines = f.readlines()
-    for line in lines:
-        if 'cycles=' in line:
-            cycles = line.split('=')[1].strip('\n')
-        line = line.split('>')[0]
-        if 'cyclictest' in line:
-            if '/bin/' in line:
-                line = line.split('/')
-                line = line[len(line)-1]
-            condition['cyclictest'] = line.strip('\n').replace('$cycles', cycles).strip()
-            break
-    f.close()
+    p = subprocess.Popen('/usr/local/bin/getprofile | grep \$cyclictest', stdout=subprocess.PIPE, stderr=DEVNULL, shell=True)
+    (output, err) = p.communicate()
+    p.wait()
+    condition['cyclictest'] = output.decode('utf-8').split('\n')[0].split('=')[1].replace('"', '').replace(';', '')
+
     if 'cyclictest' in condition:
         loops = [s for s in condition['cyclictest'].split(' ') if s.startswith('-l')]
         interval = [s for s in condition['cyclictest'].split(' ') if s.startswith('-i')]

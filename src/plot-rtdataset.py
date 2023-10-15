@@ -7,6 +7,7 @@
 import sys
 import argparse
 import json
+import re
 import matplotlib.pyplot as plt
 import matplotlib.ticker
 import xml.etree.ElementTree as ET
@@ -43,6 +44,17 @@ def maxlat(x, y):
         if y[lat] > 0:
             maximum = lat
     return maximum
+
+def decodecpulist(cpulist):
+    decoded = []
+    elements = cpulist.split(',')
+    for i in elements:
+        if '-' in i:
+            nums = i.split('-')
+            decoded += list(range(int(nums[0]), int(nums[1]) + 1))
+        else:
+            decoded.append(int(i))
+    return decoded
 
 def plot(infilename, addinput, outfilename, xred, verbose):
     """Read JSON data from "infilename" and create latency histogram "outfilename" with format derived from file name suffix."""
@@ -88,7 +100,12 @@ def plot(infilename, addinput, outfilename, xred, verbose):
     plt.ylabel('Number of samples per latency class')
     maxofmax = -1
     containers = []
-    for i in range(1, len(cores)):
+    cpulist = re.sub(r'.* -a([-,0-9]*) .*', r'\1', rt['condition']['cyclictest'])
+    if len(cpulist) == len(rt['condition']['cyclictest']):
+        cpulist = list(range(0, len(cores)-1))
+    else:
+        cpulist = decodecpulist(cpulist)
+    for i in list(range(1, len(cores))):
         if len(rt['latency']['maxima']) == 0:
             maxofcore = maxlat(cores[0], cores[i])
         else:
@@ -102,7 +119,7 @@ def plot(infilename, addinput, outfilename, xred, verbose):
             space = '  '
         else:
             space = ''
-        container = ax.stairs(cores[i], cores[0], label = 'Core #' + str(i-1) + ': ' + space + str(maxofcore) + ' µs')
+        container = ax.stairs(cores[i], cores[0], label = 'Core #' + str(cpulist[i-1]) + ': ' + space + str(maxofcore) + ' µs')
         containers.append(container)
     plt.xlabel('Latency (µs) with "' + rt['condition']['cyclictest'] + '"')
     plt.margins(0, 0)
