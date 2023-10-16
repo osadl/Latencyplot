@@ -101,7 +101,7 @@ def plot(infilename, addinput, outfilename, xred, verbose):
     maxofmax = -1
     containers = []
     cpulist = re.sub(r'.* -a([-,0-9]*) .*', r'\1', rt['condition']['cyclictest'])
-    if len(cpulist) == len(rt['condition']['cyclictest']):
+    if len(cpulist) == len(rt['condition']['cyclictest']) or len(cpulist) == 0:
         cpulist = list(range(0, len(cores)-1))
     else:
         cpulist = decodecpulist(cpulist)
