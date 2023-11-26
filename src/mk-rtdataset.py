@@ -116,12 +116,18 @@ def create(filename):
     config = ''
     try:
         c = gzip.open('/proc/config.gz', 'rb')
-        config = c.read().decode('utf-8').split('\n')
+        try:
+            config = c.read().decode('utf-8').split('\n')
+        except AttributeError:
+            config = c.read().split('\n')
         c.close()
     except FileNotFoundError:
         try:
             c = open('/boot/config-' + kernel['version'], 'r')
-            config = c.read().decode('utf-8').split('\n')
+            try:
+                config = c.read().decode('utf-8').split('\n')
+            except AttributeError:
+                config = c.read().split('\n')
             c.close()
         except FileNotFoundError:
             pass
